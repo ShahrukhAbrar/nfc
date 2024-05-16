@@ -27,6 +27,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   String _nfcTagData = 'No NFC tag detected.';
   String _hceStatus = 'Inactive';
+  bool _nfcAvail = true;
+  bool _running = false;
   final _flutterNfcHcePlugin = FlutterNfcHce();
 
   @override
@@ -66,13 +68,14 @@ class _MyHomePageState extends State<MyHomePage> {
           onDiscovered: (NfcTag tag) async {
             // Update the UI with the detected tag data.
             setState(() {
-              _nfcTagData = 'NFC Tag Detected: ${tag.data}';
+              _nfcTagData = 'NFC Tag Detected: ${tag.toString()}';
             });
           },
         );
       } else {
         setState(() {
           _nfcTagData = 'NFC not available.';
+          _nfcAvail = false;
         });
       }
     } catch (e) {
@@ -83,12 +86,30 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _startHCEMode() async {
-    var content = 'Shahrukh The BEST PROOOOO GRAMMMMER';
-    var result = await _flutterNfcHcePlugin.startNfcHce(content);
-    setState(() {
-      _hceStatus = 'Running';
-    });
+    var content = 'If you can read this, It Works!';
+    var result;
 
-    print('---------------------------------->${result!}');
+    if (!_nfcAvail) {
+      return;
+    }
+    if (!_running) {
+      try {
+        result = await _flutterNfcHcePlugin.startNfcHce(content);
+      } catch (e) {
+        setState(() {
+          _hceStatus = 'Error!';
+        });
+      }
+      setState(() {
+        _hceStatus = 'Running';
+        _running = true;
+      });
+    } else {
+      await _flutterNfcHcePlugin.stopNfcHce();
+      setState(() {
+        _hceStatus = 'Inactive!';
+        _running = false;
+      });
+    }
   }
 }
