@@ -64,11 +64,13 @@ class _MyHomePageState extends State<MyHomePage> {
       bool isAvailable = await NfcManager.instance.isAvailable();
 
       if (isAvailable) {
+        String _payload;
         NfcManager.instance.startSession(
           onDiscovered: (NfcTag tag) async {
-            // Update the UI with the detected tag data.
+            _payload =
+                tag.data["ndef"]["cachedMessage"]["record"][0]["payload"];
             setState(() {
-              _nfcTagData = 'NFC Tag Detected: ${tag.toString()}';
+              _nfcTagData = 'NFC Tag Detected: ${_payload}';
             });
           },
         );
@@ -86,10 +88,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _startHCEMode() async {
-    var content = 'If you can read this, It Works!';
+    var content = 'Shahrukh';
     var result;
+    bool nfcHceSupported = await _flutterNfcHcePlugin.isNfcHceSupported();
 
-    if (!_nfcAvail) {
+    if (!nfcHceSupported) {
       return;
     }
     if (!_running) {
